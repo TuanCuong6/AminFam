@@ -1,4 +1,4 @@
-import { Users, MessageSquare, TrendingUp, Heart, AlertCircle, CheckCircle } from 'lucide-react';
+import { Users, MessageSquare, TrendingUp, TrendingDown, Heart, AlertCircle, CheckCircle, ArrowUp, ArrowDown } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -15,35 +15,43 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-export default function Dashboard() {
+interface DashboardProps {
+  onNavigate?: (tab: string) => void;
+}
+
+export default function Dashboard({ onNavigate }: DashboardProps) {
   const stats = [
     {
       label: 'Tổng Gia Đình',
       value: '1,247',
       change: '+12.5%',
       icon: Users,
-      color: 'bg-blue-400',
+      color: 'border-blue-400 text-blue-400',
+      targetTab: 'families',
     },
     {
       label: 'Tổng Thành Viên',
       value: '4,982',
       change: '+8.2%',
       icon: Users,
-      color: 'bg-emerald-400',
+      color: 'border-emerald-400 text-emerald-400',
+      targetTab: 'members',
     },
     {
       label: 'Tâm Sự Hôm Nay',
       value: '342',
       change: '+15.3%',
       icon: MessageSquare,
-      color: 'bg-amber-400',
+      color: 'border-amber-400 text-amber-400',
+      targetTab: 'statistics',
     },
     {
       label: 'Điểm Hạnh Phúc TB',
       value: '7.8/10',
       change: '+0.5',
       icon: Heart,
-      color: 'bg-rose-400',
+      color: 'border-rose-400 text-rose-400',
+      targetTab: 'reports',
     },
   ];
 
@@ -140,22 +148,30 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
+          const isPositive = stat.change.startsWith('+');
+          const TrendIcon = isPositive ? ArrowUp : ArrowDown;
+          const trendColor = isPositive ? 'text-green-600' : 'text-red-600';
+
           return (
-            <div
+            <button
               key={index}
-              className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow border border-gray-100"
+              onClick={() => onNavigate?.(stat.targetTab)}
+              className="bg-white rounded-xl shadow-sm p-6 border-2 border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all text-left cursor-pointer"
             >
               <div className="flex items-center justify-between">
-                <div className={`${stat.color} p-3 rounded-lg`}>
-                  <Icon className="w-6 h-6 text-white" />
+                <div className={`p-3 rounded-lg border-2 ${stat.color}`}>
+                  <Icon className="w-6 h-6" />
                 </div>
-                <span className="text-sm font-semibold text-green-600">{stat.change}</span>
+                <div className={`flex items-center space-x-1 text-sm font-semibold ${trendColor}`}>
+                  <TrendIcon className="w-4 h-4" />
+                  <span>{stat.change}</span>
+                </div>
               </div>
               <div className="mt-4">
                 <p className="text-gray-500 text-sm">{stat.label}</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
@@ -220,9 +236,16 @@ export default function Dashboard() {
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 border border-gray-100">
           <h2 className="text-xl font-bold text-gray-900 mb-6">Trạng Thái Gia Đình</h2>
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={familyStatusData}>
+            <BarChart data={familyStatusData} margin={{ bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="name" stroke="#9ca3af" />
+              <XAxis
+                dataKey="name"
+                stroke="#9ca3af"
+                angle={-15}
+                textAnchor="end"
+                height={60}
+                interval={0}
+              />
               <YAxis stroke="#9ca3af" />
               <Tooltip
                 contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
@@ -263,13 +286,12 @@ export default function Dashboard() {
           {recentActivities.map((activity) => (
             <div key={activity.id} className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
               <div
-                className={`mt-1 p-2 rounded-full ${
-                  activity.status === 'success'
-                    ? 'bg-green-100'
-                    : activity.status === 'warning'
+                className={`mt-1 p-2 rounded-full ${activity.status === 'success'
+                  ? 'bg-green-100'
+                  : activity.status === 'warning'
                     ? 'bg-amber-100'
                     : 'bg-blue-100'
-                }`}
+                  }`}
               >
                 {activity.status === 'success' ? (
                   <CheckCircle className="w-4 h-4 text-green-600" />

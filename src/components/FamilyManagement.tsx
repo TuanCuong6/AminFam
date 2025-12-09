@@ -1,7 +1,14 @@
-import { Search, Eye, UserPlus, MoreVertical } from 'lucide-react';
+import { Search, Eye, UserPlus, Edit, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { createPortal } from 'react-dom';
+import FamilyProfileModal from './FamilyProfileModal';
+import EditFamilyModal from './EditFamilyModal';
 
 export default function FamilyManagement() {
-  const families = [
+  const [selectedFamilyId, setSelectedFamilyId] = useState<number | null>(null);
+  const [editingFamily, setEditingFamily] = useState<any>(null);
+
+  const [familiesData, setFamiliesData] = useState([
     {
       id: 1,
       name: 'Gia đình Nguyễn Văn A',
@@ -10,6 +17,10 @@ export default function FamilyManagement() {
       status: 'active',
       joinDate: '15/01/2024',
       lastActive: '2 giờ trước',
+      address: '123 Đường ABC, Quận 1, TP.HCM',
+      phone: '0901234567',
+      email: 'nguyenvana@email.com',
+      notes: 'Gia đình hòa thuận, tích cực tham gia hoạt động',
     },
     {
       id: 2,
@@ -19,6 +30,10 @@ export default function FamilyManagement() {
       status: 'warning',
       joinDate: '10/01/2024',
       lastActive: '5 giờ trước',
+      address: '456 Đường XYZ, Quận 3, TP.HCM',
+      phone: '0912345678',
+      email: 'tranthib@email.com',
+      notes: 'Cần theo dõi thêm về mối quan hệ gia đình',
     },
     {
       id: 3,
@@ -28,6 +43,10 @@ export default function FamilyManagement() {
       status: 'active',
       joinDate: '08/01/2024',
       lastActive: '1 giờ trước',
+      address: '789 Đường DEF, Quận 5, TP.HCM',
+      phone: '0923456789',
+      email: 'levanc@email.com',
+      notes: 'Gia đình mẫu mực, rất tích cực',
     },
     {
       id: 4,
@@ -37,6 +56,10 @@ export default function FamilyManagement() {
       status: 'active',
       joinDate: '05/01/2024',
       lastActive: '3 giờ trước',
+      address: '321 Đường GHI, Quận 7, TP.HCM',
+      phone: '0934567890',
+      email: 'phamthid@email.com',
+      notes: 'Gia đình đông con, cần hỗ trợ thêm',
     },
     {
       id: 5,
@@ -46,6 +69,10 @@ export default function FamilyManagement() {
       status: 'critical',
       joinDate: '01/01/2024',
       lastActive: '12 giờ trước',
+      address: '654 Đường JKL, Quận 10, TP.HCM',
+      phone: '0945678901',
+      email: 'hoangvane@email.com',
+      notes: 'Cần can thiệp và hỗ trợ khẩn cấp',
     },
     {
       id: 6,
@@ -55,8 +82,16 @@ export default function FamilyManagement() {
       status: 'active',
       joinDate: '28/12/2023',
       lastActive: '30 phút trước',
+      address: '987 Đường MNO, Quận 2, TP.HCM',
+      phone: '0956789012',
+      email: 'dothif@email.com',
+      notes: 'Gia đình nhỏ, quan hệ tốt',
     },
-  ];
+  ]);
+
+  const handleSaveFamily = (updatedFamily: any) => {
+    setFamiliesData(familiesData.map(f => f.id === updatedFamily.id ? updatedFamily : f));
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -157,13 +192,14 @@ export default function FamilyManagement() {
               </tr>
             </thead>
             <tbody>
-              {families.map((family) => (
+              {familiesData.map((family) => (
                 <tr
                   key={family.id}
-                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                  onClick={() => setSelectedFamilyId(family.id)}
                 >
                   <td className="py-4 px-4">
-                    <p className="font-medium text-gray-900">{family.name}</p>
+                    <p className="font-medium text-gray-900 hover:text-rose-500 transition-colors">{family.name}</p>
                   </td>
                   <td className="py-4 px-4">
                     <p className="text-gray-700">{family.members} người</p>
@@ -190,11 +226,37 @@ export default function FamilyManagement() {
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center space-x-2">
-                      <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                        <Eye className="w-4 h-4 text-gray-600" />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedFamilyId(family.id);
+                        }}
+                        className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
+                        title="Xem hồ sơ"
+                      >
+                        <Eye className="w-4 h-4 text-gray-600 group-hover:text-blue-600" />
                       </button>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                        <MoreVertical className="w-4 h-4 text-gray-600" />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingFamily(family);
+                        }}
+                        className="p-2 hover:bg-green-50 rounded-lg transition-colors group"
+                        title="Chỉnh sửa"
+                      >
+                        <Edit className="w-4 h-4 text-gray-600 group-hover:text-green-600" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm('Bạn có chắc muốn xóa gia đình này?')) {
+                            setFamiliesData(familiesData.filter(f => f.id !== family.id));
+                          }
+                        }}
+                        className="p-2 hover:bg-red-50 rounded-lg transition-colors group"
+                        title="Xóa"
+                      >
+                        <Trash2 className="w-4 h-4 text-gray-600 group-hover:text-red-600" />
                       </button>
                     </div>
                   </td>
@@ -223,6 +285,23 @@ export default function FamilyManagement() {
           </div>
         </div>
       </div>
+
+      {selectedFamilyId && createPortal(
+        <FamilyProfileModal
+          familyId={selectedFamilyId}
+          onClose={() => setSelectedFamilyId(null)}
+        />,
+        document.body
+      )}
+
+      {editingFamily && createPortal(
+        <EditFamilyModal
+          family={editingFamily}
+          onClose={() => setEditingFamily(null)}
+          onSave={handleSaveFamily}
+        />,
+        document.body
+      )}
     </div>
   );
 }

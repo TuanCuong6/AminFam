@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   LayoutDashboard,
   Users,
-  MessageSquare,
   BarChart3,
   FileText,
   Heart,
@@ -18,13 +17,13 @@ import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './components/Dashboard';
 import FamilyManagement from './components/FamilyManagement';
 import MemberManagement from './components/MemberManagement';
-import MessagesManagement from './components/MessagesManagement';
 import Statistics from './components/Statistics';
 import Reports from './components/Reports';
 import UserManagement from './components/UserManagement';
+import MyProfile from './components/MyProfile';
 import Header from './components/Header';
 
-type TabType = 'dashboard' | 'families' | 'members' | 'messages' | 'statistics' | 'reports' | 'users';
+type TabType = 'dashboard' | 'families' | 'members' | 'statistics' | 'reports' | 'users' | 'profile';
 
 function AppContent() {
   const { isLoggedIn } = useAuth();
@@ -43,40 +42,46 @@ function AppContent() {
     { id: 'dashboard' as TabType, label: 'Tổng Quan', icon: LayoutDashboard },
     { id: 'families' as TabType, label: 'Quản Lý Gia Đình', icon: Users },
     { id: 'members' as TabType, label: 'Quản Lý Người Dùng', icon: UserCircle },
-    { id: 'messages' as TabType, label: 'Quản Lý Tâm Sự', icon: MessageSquare },
     { id: 'statistics' as TabType, label: 'Thống Kê & Phân Tích', icon: BarChart3 },
     { id: 'reports' as TabType, label: 'Báo Cáo Hạnh Phúc', icon: FileText },
     { id: 'users' as TabType, label: 'Quản Trị Admin', icon: Shield },
   ];
 
+  const handleNavigate = (tab: string) => {
+    setActiveTab(tab as TabType);
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard onNavigate={handleNavigate} />;
       case 'families':
         return <FamilyManagement />;
       case 'members':
         return <MemberManagement />;
-      case 'messages':
-        return <MessagesManagement />;
       case 'statistics':
         return <Statistics />;
       case 'reports':
         return <Reports />;
       case 'users':
         return <UserManagement />;
+      case 'profile':
+        return <MyProfile onBack={() => setActiveTab('dashboard')} />;
       default:
-        return <Dashboard />;
+        return <Dashboard onNavigate={handleNavigate} />;
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header sidebarOpen={sidebarOpen} />
+      <Header
+        sidebarOpen={sidebarOpen}
+        onNavigateToProfile={() => setActiveTab('profile')}
+      />
       <div className="flex flex-1">
         <aside
           className={`${sidebarOpen ? 'w-64' : 'w-20'
-            } bg-gradient-to-b from-rose-400 to-rose-500 text-white transition-all duration-300 flex flex-col fixed left-0 top-0 h-screen z-30 overflow-y-auto`}
+            } bg-gradient-to-b from-pink-400 to-rose-500 text-white transition-all duration-300 flex flex-col fixed left-0 top-0 h-screen z-30 overflow-y-auto`}
         >
           <div className="p-6 flex items-center justify-between flex-shrink-0">
             {sidebarOpen && (
@@ -115,7 +120,7 @@ function AppContent() {
         </aside>
 
         <main className={`flex-1 overflow-auto ${sidebarOpen ? 'ml-64' : 'ml-20'} transition-all duration-300`}>
-          <div className="p-8">
+          <div className="p-6">
             {renderContent()}
           </div>
         </main>
